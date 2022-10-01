@@ -11,6 +11,11 @@ import redis
 import requests
 from telegram import Bot
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 CACHE = {}
 
 
@@ -22,6 +27,9 @@ class Rect:
         self.y = y
         self.w = w
         self.h = h
+
+    def __repr__(self):
+        return f"Rect({self.x}, {self.y}, {self.w}, {self.h})"
 
 
 def predict(img) -> typing.List[Rect]:
@@ -61,6 +69,9 @@ def blur(img, rects: typing.List[Rect]):
 def transform(src_filename, desc_filename):
     img = cv2.imread(src_filename)
     faces = predict(img)
+    logger.info(f"Found '{len(faces)}' faces")
+    if faces:
+        logger.info(f"Rects: '{faces}'")
     img = blur(img, faces)
 
     cv2.imwrite(desc_filename, img)
@@ -83,6 +94,7 @@ class DataReceiver:
 
 
 def load_image(req, dest_filename):
+    logger.info(f"Load {req}")
     resp = requests.get(req["img"])
     if not resp.ok:
         raise ValueError(resp)
