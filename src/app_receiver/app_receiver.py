@@ -18,7 +18,19 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+
+class TaskCreator:
+    def __init__(self):
+        self._r = redis.Redis(host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], db=0)
+
+    def create(self, img_url, chart_id):
+        self._r.rpush(os.environ["REDIS_QUEUE"], json.dumps({
+            "img": img_url,
+            "chat_id": chart_id
+        }))
+
+
+task_creator = TaskCreator()
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -30,24 +42,26 @@ def start(update: Update, context: CallbackContext) -> None:
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
 
 def echo(update: Update, context: CallbackContext) -> None:
-    """Echo the user message."""
-    photos = update.message.photo
-    if len(photos) > 0:
-        img = context.bot.get_file(update.message.photo[-1].file_id).file_path
-        req = {
-            "img": img,
-            "chat_id": update.message.chat_id
-        }
-        r.rpush("queue:in_images", json.dumps(req))
+    if len(update.message.photo) > 0:
+        task_creator.create(
+            context.bot.get_file(update.message.photo[-1].file_id).file_path,
+            update.message.chat_id
+        )
+        return
+    if (update.message.effective_attachment is not None
+            and update.message.effective_attachment.thumb is not None):
+        task_creator.create(
+            context.bot.get_file(update.message.effective_attachment.thumb.file_id).file_path,
+            update.message.chat_id
+        )
 
 
 def main() -> None:
-    updater = Updater(os.environ["TOKEN"])
+    updater = Updater(os.environ["TELEGRAM_BOT_TOKEN"])
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))

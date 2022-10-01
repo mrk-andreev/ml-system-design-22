@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import tempfile
 import time
@@ -65,27 +66,53 @@ def transform(src_filename, desc_filename):
     cv2.imwrite(desc_filename, img)
 
 
-def main():
-    r = redis.Redis(host='localhost', port=6379, db=0)
-    b = Bot(os.environ["TOKEN"])
-    while True:
-        req = r.lpop("queue:in_images")
-        if req is None:
-            time.sleep(1)
-            continue
-        req = json.loads(req.decode())
+class DataReceiver:
+    def __init__(self):
+        self._r = redis.Redis(host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], db=0)
 
-        with tempfile.TemporaryDirectory() as tdir:
-            in_file = os.path.join(tdir, "input.jpg")
-            img = req["img"]
-            resp = requests.get(img)
-            if resp.ok:
-                with open(in_file, 'wb') as f:
-                    f.write(resp.content)
-            out_file = os.path.join(tdir, "output.jpg")
-            transform(in_file, out_file)
-            with open(out_file, "rb") as f:
-                b.send_photo(chat_id=req["chat_id"], photo=f)
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while True:
+            req: bytes = self._r.lpop(os.environ["REDIS_QUEUE"])
+            if req is None:
+                time.sleep(1)
+                continue
+            return json.loads(req.decode())
+
+
+def load_image(req, dest_filename):
+    resp = requests.get(req["img"])
+    if not resp.ok:
+        raise ValueError(resp)
+
+    with open(dest_filename, 'wb') as f:
+        f.write(resp.content)
+
+
+class DataUploader:
+    def __init__(self):
+        self._b = Bot(os.environ["TELEGRAM_BOT_TOKEN"])
+
+    def upload(self, req, out_file):
+        with open(out_file, "rb") as f:
+            self._b.send_photo(chat_id=req["chat_id"], photo=f)
+
+
+def main():
+    data_uploader = DataUploader()
+    for req in DataReceiver():
+        try:
+            with tempfile.TemporaryDirectory() as tdir:
+                in_file = os.path.join(tdir, "input.jpg")
+                out_file = os.path.join(tdir, "output.jpg")
+
+                load_image(req, in_file)
+                transform(in_file, out_file)
+                data_uploader.upload(req, out_file)
+        except Exception as e:
+            logging.error(e)
 
 
 if __name__ == '__main__':
