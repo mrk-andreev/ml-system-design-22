@@ -37,10 +37,9 @@ def predict(img) -> typing.List[Rect]:
         CACHE["MODEL"] = cv2.CascadeClassifier(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
         )
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return [
         Rect(*f)
-        for f in CACHE["MODEL"].detectMultiScale(gray, 1.1, 4)
+        for f in CACHE["MODEL"].detectMultiScale(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 1.1, 4)
     ]
 
 
