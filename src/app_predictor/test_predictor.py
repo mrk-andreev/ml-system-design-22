@@ -20,3 +20,9 @@ def test_blur():
     img = cv2.imread(IMAGE_IN)
     img_after_blur = blur(img, [Rect(*[0, 0, 10, 10])])
     assert (img != img_after_blur).any()
+
+
+def test_blur_empty():
+    img = cv2.imread(IMAGE_IN)
+    img_after_blur = blur(img, [])
+    assert (img == img_after_blur).all()
