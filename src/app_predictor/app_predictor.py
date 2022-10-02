@@ -43,9 +43,6 @@ def predict(img) -> typing.List[Rect]:
     ]
 
 
-BLUR_KERNEL_SIZE = (30, 30)
-
-
 def blur(img, rects: typing.List[Rect]):
     img = img.copy()
     for rect in rects:
@@ -60,7 +57,7 @@ def blur(img, rects: typing.List[Rect]):
             continue
 
         img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :] = cv2.blur(
-            img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :], BLUR_KERNEL_SIZE)
+            img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :], (rect.w // 2, rect.h // 2))
 
     return img
 
