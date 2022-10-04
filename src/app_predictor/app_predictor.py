@@ -57,7 +57,7 @@ def blur(img, rects: typing.List[Rect]):
             continue
 
         img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :] = cv2.blur(
-            img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :], (rect.w // 2, rect.h // 2))
+            img[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w, :], ksize=(rect.w // 2, rect.h // 2))
 
     return img
 
@@ -68,7 +68,7 @@ def transform(src_filename, desc_filename):
     logger.info(f"Found '{len(faces)}' faces")
     if faces:
         logger.info(f"Rects: '{faces}'")
-    img = blur(img, faces)
+        img = blur(img, faces)
 
     cv2.imwrite(desc_filename, img)
 
