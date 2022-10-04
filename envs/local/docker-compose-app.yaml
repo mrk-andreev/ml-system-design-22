@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  redis:
+    restart: always
+    image: redis:7.0.5
+    ports:
+      - "6379:6379"
+
+  app_receiver:
+    depends_on:
+      - redis
+    restart: always
+    build:
+      context: ../../src/app_receiver
+      dockerfile: Dockerfile
+    environment:
+      REDIS_QUEUE: "queue:in_images"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+
+
+  app_predictor:
+    depends_on:
+      - redis
+    restart: always
+    build:
+      context: ../../src/app_predictor
+      dockerfile: Dockerfile
+    environment:
+      REDIS_QUEUE: "queue:in_images"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
