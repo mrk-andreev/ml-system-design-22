@@ -1,6 +1,6 @@
 # Project "Photo Anonymization"
 
-Telegram bot "Photo Anonymization". You upload a photo, the faces are programmatically smeared.
+Telegram bot "Photo Anonymization". You upload a photo, the faces are programmatically blured.
 
 ![Image](docs/images/v0-prototype.png)
 
@@ -11,12 +11,16 @@ Telegram bot "Photo Anonymization". You upload a photo, the faces are programmat
 
 ## How to deploy
 
-### Local
+### Local e2e
+
+- Redis
+- app_receiver
+- app_predictor
 
 ```
 cd envs/local
 export TELEGRAM_BOT_TOKEN="<TELEGRAM_BOT_TOKEN>"
-docker-compose -f docker-compose-redis-only.yaml up --build
+docker-compose -f docker-compose-app.yaml up --build
 ```
 
 ## Components
