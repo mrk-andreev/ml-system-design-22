@@ -8,6 +8,8 @@ services:
       - "6379:6379"
 
   app_receiver:
+    depends_on:
+      - redis
     restart: always
     build:
       context: ../../src/app_receiver
@@ -20,6 +22,8 @@ services:
 
 
   app_predictor:
+    depends_on:
+      - redis
     restart: always
     build:
       context: ../../src/app_predictor
