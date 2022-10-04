@@ -37,12 +37,12 @@ class BotCommandDispatcher:
     def start(self, update: Update, context: CallbackContext) -> None:
         user = update.effective_user
         update.message.reply_markdown_v2(
-            fr'Hi {user.mention_markdown_v2()}\!',
+            fr'Hi {user.mention_markdown_v2()}\! Upload picture with faces.',
             reply_markup=ForceReply(selective=True),
         )
 
     def help_command(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text('Help!')
+        update.message.reply_text('Upload image as picture. Bot will blur all detected faces.')
 
     def echo(self, update: Update, context: CallbackContext) -> None:
         if len(update.message.photo) > 0:
