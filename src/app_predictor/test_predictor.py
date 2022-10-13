@@ -1,18 +1,26 @@
 import os
 
 import cv2
+import pytest
 
 from src.app_predictor.app_predictor import blur
-from src.app_predictor.app_predictor import predict
+from src.app_predictor.app_predictor import Cv2CascadeClassifierPredictor
 from src.app_predictor.app_predictor import Rect
 
 IMAGE_IN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data/sample-0.png")
 IMAGE_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data/sample-0_out.png")
 
 
-def test_predict():
+@pytest.fixture()
+def predictor():
+    return Cv2CascadeClassifierPredictor(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
+    )
+
+
+def test_predict(predictor):
     img = cv2.imread(IMAGE_IN)
-    faces = predict(img)
+    faces = predictor.predict(img)
     assert len(faces) >= 9
 
 
