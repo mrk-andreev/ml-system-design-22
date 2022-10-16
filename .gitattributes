@@ -1,0 +1,18 @@
+*.gif           binary
+*.ico           binary
+*.jpg           binary
+*.jpeg          binary
+*.png           binary
+*.so            binary
+
+
+*.yaml          text
+*.yml           text
+*.ipynb         text
+*.md            text
+*.xml           text
+*.txt           text
+*.py            text
+Dockerfile      text
+Makefile        text
+*.cfg           text
