@@ -2,6 +2,7 @@
 
 [<img src="https://img.shields.io/badge/license-Apache_2.0-blue">](https://github.com/mrk-andreev/ml-system-design-22/blob/master/README.md)
 [![CodeFactor](https://www.codefactor.io/repository/github/mrk-andreev/ml-system-design-22/badge)](https://www.codefactor.io/repository/github/mrk-andreev/ml-system-design-22)
+[![DeepSource](https://deepsource.io/gh/mrk-andreev/ml-system-design-22.svg/?label=active+issues&token=iVXZ3xbgH0f0xA2g7o6WCJTX)](https://deepsource.io/gh/mrk-andreev/ml-system-design-22/?ref=repository-badge)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=mrk-andreev_ml-system-design-22&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=mrk-andreev_ml-system-design-22)
 ![GitHub contributors](https://img.shields.io/github/contributors/mrk-andreev/ml-system-design-22)
 ![GitHub issues](https://img.shields.io/github/issues/mrk-andreev/ml-system-design-22)
