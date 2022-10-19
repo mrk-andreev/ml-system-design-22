@@ -137,7 +137,7 @@ def transform(predict_saver, predictor: BasePredictor, req, img):
     faces = predictor.predict(img)
     predict_saver.save(req, faces)
 
-    logger.info(f"Found '%s' faces", len(faces))
+    logger.info("Found '%s' faces", len(faces))
     if faces:
         logger.info("Rects: '%s'", faces)
         return blur(img, faces)
@@ -232,7 +232,7 @@ class S3BlobStorageReader(BlobStorageReader):
 
 
 def load_image(req, storages: typing.Dict[str, BlobStorageReader]):
-    logger.info(f"Load %s", req)
+    logger.info("Load %s", req)
     storage, href = req["img"]["storage"], req["img"]["href"]
 
     if storage not in storages:
