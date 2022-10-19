@@ -120,7 +120,7 @@ class IouMetric:
         for gt in y_true:
             max_iou_per_gt = 0
             for i, pred in enumerate(y_pred):
-                if i not in pred_dict.keys():
+                if i not in pred_dict:
                     pred_dict[i] = 0
                 iou = self._get_iou(gt, pred)
                 if iou > max_iou_per_gt:
