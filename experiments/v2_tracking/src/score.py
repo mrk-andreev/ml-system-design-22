@@ -73,13 +73,13 @@ class IouMetric:
             in [0, 1]
             """
 
-        bb1 = dict()
+        bb1 = {}
         bb1['x1'] = box_a[0]
         bb1['y1'] = box_a[1]
         bb1['x2'] = box_a[2]
         bb1['y2'] = box_a[3]
 
-        bb2 = dict()
+        bb2 = {}
         bb2['x1'] = box_b[0]
         bb2['y1'] = box_b[1]
         bb2['x2'] = box_b[2]
@@ -117,7 +117,7 @@ class IouMetric:
         """Note: function with side effect"""
         self._correct_predict(y_true, y_pred)
         total_iou = 0
-        pred_dict = dict()
+        pred_dict = {}
         for gt in y_true:
             max_iou_per_gt = 0
             for i, pred in enumerate(y_pred):
