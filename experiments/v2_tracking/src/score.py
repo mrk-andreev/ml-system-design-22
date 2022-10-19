@@ -73,17 +73,19 @@ class IouMetric:
             in [0, 1]
             """
 
-        bb1 = {}
-        bb1['x1'] = box_a[0]
-        bb1['y1'] = box_a[1]
-        bb1['x2'] = box_a[2]
-        bb1['y2'] = box_a[3]
+        bb1 = {
+            'x1':  box_a[0],
+            'y1': box_a[1],
+            'x2': box_a[2],
+            'y2': box_a[3],
+        }
 
-        bb2 = {}
-        bb2['x1'] = box_b[0]
-        bb2['y1'] = box_b[1]
-        bb2['x2'] = box_b[2]
-        bb2['y2'] = box_b[3]
+        bb2 = {
+            'x1': box_b[0],
+            'y1': box_b[1],
+            'x2': box_b[2],
+            'y2': box_b[3],
+        }
 
         # Determine the coordinates of the intersection rectangle
         x_left = max(bb1['x1'], bb2['x1'])
