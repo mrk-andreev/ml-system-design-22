@@ -74,7 +74,7 @@ class IouMetric:
             """
 
         bb1 = {
-            'x1':  box_a[0],
+            'x1': box_a[0],
             'y1': box_a[1],
             'x2': box_a[2],
             'y2': box_a[3],
@@ -109,8 +109,8 @@ class IouMetric:
         # areas - the intersection area
         iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
 
-        if not (0 <= iou <= 1):
-            raise ValueError("Invalid iou value range")
+        if iou < 0 or iou > 1:
+            raise ValueError(f"Invalid iou value = '{iou}', out of [0,1] range.")
 
         return iou
 
