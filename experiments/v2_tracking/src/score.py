@@ -108,8 +108,8 @@ class IouMetric:
         # areas - the intersection area
         iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
 
-        assert iou >= 0.0
-        assert iou <= 1.0
+        if not (0 <= iou <= 1):
+            raise ValueError("Invalid iou value range")
 
         return iou
 
