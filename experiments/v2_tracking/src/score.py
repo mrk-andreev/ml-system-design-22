@@ -92,7 +92,6 @@ class IouMetric:
         y_bottom = min(bb1['y2'], bb2['y2'])
 
         if x_right < x_left or y_bottom < y_top:
-            # print('check')
             return 0.0
 
         # The intersection of two axis-aligned bounding boxes is always an
