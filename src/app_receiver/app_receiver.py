@@ -188,7 +188,8 @@ class BotCommandDispatcher:
         self._blob_storage = blob_storage
         self._feedback_storage = feedback_storage
 
-    def start(self, update: Update, _: CallbackContext) -> None:
+    @classmethod
+    def start(cls, update: Update, _: CallbackContext) -> None:
         user = update.effective_user
         update.message.reply_markdown_v2(
             rf"Hi {user.mention_markdown_v2()}\! Upload picture with faces.",

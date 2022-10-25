@@ -73,17 +73,19 @@ class IouMetric:
             in [0, 1]
             """
 
-        bb1 = dict()
-        bb1['x1'] = box_a[0]
-        bb1['y1'] = box_a[1]
-        bb1['x2'] = box_a[2]
-        bb1['y2'] = box_a[3]
+        bb1 = {
+            'x1': box_a[0],
+            'y1': box_a[1],
+            'x2': box_a[2],
+            'y2': box_a[3],
+        }
 
-        bb2 = dict()
-        bb2['x1'] = box_b[0]
-        bb2['y1'] = box_b[1]
-        bb2['x2'] = box_b[2]
-        bb2['y2'] = box_b[3]
+        bb2 = {
+            'x1': box_b[0],
+            'y1': box_b[1],
+            'x2': box_b[2],
+            'y2': box_b[3],
+        }
 
         # Determine the coordinates of the intersection rectangle
         x_left = max(bb1['x1'], bb2['x1'])
@@ -92,7 +94,6 @@ class IouMetric:
         y_bottom = min(bb1['y2'], bb2['y2'])
 
         if x_right < x_left or y_bottom < y_top:
-            # print('check')
             return 0.0
 
         # The intersection of two axis-aligned bounding boxes is always an
@@ -108,8 +109,8 @@ class IouMetric:
         # areas - the intersection area
         iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
 
-        assert iou >= 0.0
-        assert iou <= 1.0
+        if iou < 0 or iou > 1:
+            raise ValueError(f"Invalid iou value = '{iou}', out of [0,1] range.")
 
         return iou
 
@@ -117,11 +118,11 @@ class IouMetric:
         """Note: function with side effect"""
         self._correct_predict(y_true, y_pred)
         total_iou = 0
-        pred_dict = dict()
+        pred_dict = {}
         for gt in y_true:
             max_iou_per_gt = 0
             for i, pred in enumerate(y_pred):
-                if i not in pred_dict.keys():
+                if i not in pred_dict:
                     pred_dict[i] = 0
                 iou = self._get_iou(gt, pred)
                 if iou > max_iou_per_gt:
