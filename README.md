@@ -10,10 +10,13 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Gitpod](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mrk-andreev/ml-system-design-22)
 
-
 Telegram bot "Photo Anonymization". You upload a photo, the faces are programmatically blured.
 
+**Prediction flow**
 ![Image](docs/images/prediction-feedback-flow-diagram.png)
+
+**Train-score-deploy flow**
+![Image](docs/images/model-flow-diagram.png)
 
 ## Authors
 
