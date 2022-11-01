@@ -92,6 +92,8 @@ def train(
 ):
     from yolov5.train import run
 
+    os.makedirs(os.path.dirname(weights), exist_ok=True)
+
     run(
         data=index_path,
         imgsz=img_size,
@@ -136,7 +138,7 @@ def main():
         batch=64,
         workers=1,
         epochs=1,
-        weights='/tmp/yolov5m.pt',
+        weights='/tmp/output/yolov5m.pt',
         cfg=os.path.join(YOLOV5_DIR, 'models/yolov5s.yaml'),
     )
 
