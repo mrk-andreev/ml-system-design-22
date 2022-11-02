@@ -13,9 +13,11 @@
 Telegram bot "Photo Anonymization". You upload a photo, the faces are programmatically blured.
 
 **Prediction flow**
+
 ![Image](docs/images/prediction-feedback-flow-diagram.png)
 
 **Train-score-deploy flow**
+
 ![Image](docs/images/model-flow-diagram.png)
 
 ## Authors
