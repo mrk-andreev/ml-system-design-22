@@ -1,8 +1,10 @@
 import os
+import tempfile
 from glob import glob
 from shutil import copy
 
 import cv2
+import mlflow
 import numpy as np
 from tqdm import tqdm
 
@@ -105,42 +107,50 @@ def train(
     )
 
 
-def main():
+def run(workdir):
     np.random.seed(101)
 
     export_dataset(
         "export_val",
-        output_val_img_dir='/tmp/newDataset/images/val',
-        output_val_labels_dir='/tmp/newDataset/labels/val',
+        output_val_img_dir=f'{workdir}/newDataset/images/val',
+        output_val_labels_dir=f'{workdir}/newDataset/labels/val',
         val_labels_path=os.path.join(DATASET_DIR, 'wider_face_split/wider_face_val_bbx_gt.txt'),
         val_img_path=os.path.join(DATASET_DIR, 'WIDER_val/images')
     )
 
     export_dataset(
         "export_train",
-        output_val_img_dir='/tmp/newDataset/images/train',
-        output_val_labels_dir='/tmp/newDataset/labels/train',
+        output_val_img_dir=f'{workdir}/newDataset/images/train',
+        output_val_labels_dir=f'{workdir}/newDataset/labels/train',
         val_labels_path=os.path.join(DATASET_DIR, 'wider_face_split/wider_face_train_bbx_gt.txt'),
         val_img_path=os.path.join(DATASET_DIR, 'WIDER_train/images')
     )
 
-    prepare_images('/tmp/newDataset/images/*', target_width=640)
+    prepare_images(f'{workdir}/newDataset/images/*', target_width=640)
 
     prepare_index(
-        index_path='/tmp/yolov5/data/dataset.yaml',
-        train_img_path='/tmp/newDataset/images/train',
-        val_img_path='/tmp/newDataset/images/val'
+        index_path=f'{workdir}/yolov5/data/dataset.yaml',
+        train_img_path=f'{workdir}/newDataset/images/train',
+        val_img_path=f'{workdir}/newDataset/images/val'
     )
 
     train(
-        index_path='/tmp/yolov5/data/dataset.yaml',
+        index_path=f'{workdir}/yolov5/data/dataset.yaml',
         img_size=640,
         batch=64,
         workers=1,
         epochs=1,
-        weights='/tmp/output/yolov5m.pt',
-        cfg=os.path.join(YOLOV5_DIR, 'models/yolov5s.yaml'),
+        weights=f'{workdir}/output/yolov5m.pt',
+        cfg=os.path.join(YOLOV5_DIR, 'models/yolov5n.yaml'),
     )
+
+
+def main():
+    mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URL", 'http://localhost:5000'))
+    with mlflow.start_run():
+        mlflow.autolog()
+        with tempfile.TemporaryDirectory() as workdir:
+            run(workdir)
 
 
 if __name__ == '__main__':
