@@ -1,6 +1,10 @@
 import abc
+import os
+import tempfile
 from typing import List
+from typing import Optional
 
+import mlflow
 import numpy as np
 import torch
 
@@ -31,17 +35,43 @@ class Rect:
         }
 
 
-class BasePredictor(abc.ABC):
+class BaseMlFlowModel(mlflow.pyfunc.PythonModel, abc.ABC):
+    @property
     @abc.abstractmethod
-    def predict(self, img: List[List[int]]) -> List[Rect]:
+    def name(self):
         pass
 
+    @abc.abstractmethod
+    def load_context(self, context):
+        pass
 
-class YoloPredictor(BasePredictor):
-    def __init__(self, weight_path):
-        self._model = DetectMultiBackend(weights=weight_path)
+    @abc.abstractmethod
+    def predict_from_picture(self, img):
+        pass
 
-    def predict(self, img: List[List[int]]) -> List[Rect]:
+    def predict(self, context, model_input) -> List[Rect]:
+        return self.predict_from_picture(model_input)
+
+
+class YoloPredictor(BaseMlFlowModel):
+    def __init__(self):
+        self._model: Optional[DetectMultiBackend] = None
+
+    @property
+    def name(self):
+        return "yolov5"
+
+    def load_context(self, context):
+        with tempfile.TemporaryDirectory() as tdir:
+            weight_path = os.path.join(tdir, "model.pt")
+            with open(context.artifacts['weight'], 'rb') as f_in, open(weight_path, 'wb') as f_out:
+                f_out.write(f_in.read())
+            self._model = DetectMultiBackend(weights=weight_path)
+
+    def predict(self, context, model_input):
+        return self.predict_from_picture(model_input)
+
+    def predict_from_picture(self, img: List[List[int]]) -> List[Rect]:
         img = np.asarray(img)
         stride, names, pt = self._model.stride, self._model.names, self._model.pt
         imgsz = (640, 640)

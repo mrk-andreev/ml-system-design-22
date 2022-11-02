@@ -2,6 +2,7 @@ import os
 from glob import glob
 
 import cv2
+import mlflow
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -69,7 +70,9 @@ DATASET_DIR = os.path.join(os.path.dirname(__file__), '../dataset/')
 
 def evaluate_score():
     weight_path = os.path.join(os.path.dirname(__file__), '../sample_weight/face_detection_yolov5s.pt')
-    predictor = YoloPredictor(weight_path)
+    predictor = YoloPredictor()
+    context = mlflow.pyfunc.PythonModelContext({'weight': weight_path})
+    predictor.load_context(context)
 
     img_dir = os.path.join(DATASET_DIR, 'WIDER_val/images/')
     labels = pd.read_csv(os.path.join(DATASET_DIR, 'wider_face_split/wider_face_val_bbx_gt.txt'), header=None)
@@ -79,7 +82,7 @@ def evaluate_score():
     for filename in tqdm(glob(img_dir + '*/*.jpg')):
         name = filename[len(img_dir):]
 
-        y_pred_raw = predictor.predict(cv2.imread(filename))
+        y_pred_raw = predictor.predict_from_picture(cv2.imread(filename))
 
         # convert y_pred_raw to aliasable format
         y_pred = np.ones((len(y_pred_raw), 4)) if len(y_pred_raw) else np.array([])
@@ -124,8 +127,11 @@ def evaluate_score():
 
 
 def main():
-    score = evaluate_score()
-    print(score)
+    mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URL", 'http://localhost:5000'))
+    with mlflow.start_run():
+        mlflow.autolog()
+        score = evaluate_score()
+        mlflow.log_metric('iou', score)
 
 
 if __name__ == '__main__':
