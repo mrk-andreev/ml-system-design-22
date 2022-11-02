@@ -1,16 +1,12 @@
 import os
 from glob import glob
 
+import cv2
 import numpy as np
 import pandas as pd
-import torch
 from tqdm import tqdm
 
-from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.dataloaders import LoadImages
-from yolov5.utils.general import non_max_suppression
-from yolov5.utils.general import Profile
-from yolov5.utils.general import scale_boxes
+from experiments.v3_yolo.score.predict import YoloPredictor
 
 
 # metric
@@ -73,15 +69,7 @@ DATASET_DIR = os.path.join(os.path.dirname(__file__), '../dataset/')
 
 def evaluate_score():
     weight_path = os.path.join(os.path.dirname(__file__), '../sample_weight/face_detection_yolov5s.pt')
-    model = DetectMultiBackend(weights=weight_path)
-    stride, names, pt = model.stride, model.names, model.pt
-
-    imgsz = (640, 640)
-    conf_thres = 0.25  # confidence threshold
-    iou_thres = 0.5  # NMS IOU threshold
-    classes = None
-    agnostic_nms = False  # class-agnostic NMS
-    max_det = 1000  # maximum detections per image
+    predictor = YoloPredictor(weight_path)
 
     img_dir = os.path.join(DATASET_DIR, 'WIDER_val/images/')
     labels = pd.read_csv(os.path.join(DATASET_DIR, 'wider_face_split/wider_face_val_bbx_gt.txt'), header=None)
@@ -91,40 +79,16 @@ def evaluate_score():
     for filename in tqdm(glob(img_dir + '*/*.jpg')):
         name = filename[len(img_dir):]
 
-        # Dataloader
-        bs = 1  # batch_size
-        dataset = LoadImages(filename, img_size=imgsz, stride=stride, auto=pt, vid_stride=1)
+        y_pred_raw = predictor.predict(cv2.imread(filename))
 
-        # Predict
-        # Run inference
-        model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
-        seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
-        for path, im, im0s, vid_cap, s in dataset:
-            with dt[0]:
-                im = torch.from_numpy(im).to(model.device)
-                im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
-                im /= 255  # 0 - 255 to 0.0 - 1.0
-                if len(im.shape) == 3:
-                    im = im[None]  # expand for batch dim
-
-            # Inference
-            with dt[1]:
-                # visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
-                pred = model(im, augment=False, visualize=False)
-
-            # NMS
-            with dt[2]:
-                pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-
-            # Process predictions
-            for i, det in enumerate(pred):  # per image
-                seen += 1
-
-                p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
-
-                if len(det):
-                    # Rescale boxes from img_size to im0 size
-                    det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
+        # convert y_pred_raw to aliasable format
+        y_pred = np.ones((len(y_pred_raw), 4)) if len(y_pred_raw) else np.array([])
+        for i in range(len(y_pred_raw)):
+            y_pred[i, 0] = y_pred_raw[i].x
+            y_pred[i, 1] = y_pred_raw[i].y
+            y_pred[i, 2] = y_pred_raw[i].x + y_pred_raw[i].w
+            y_pred[i, 3] = y_pred_raw[i].y + y_pred_raw[i].h
+        y_pred = y_pred.astype(int)
 
         # fact
         ind_lab = labels[labels[0] == name].index[0]
@@ -136,7 +100,6 @@ def evaluate_score():
         for i in range(len(y_true)):
             y_true[i][2] = y_true[i][2] + y_true[i][0]
             y_true[i][3] = y_true[i][3] + y_true[i][1]
-        y_pred = np.array(det[:, :4]).astype(int)
 
         # evaluate
         total_iou = 0
