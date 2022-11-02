@@ -8,6 +8,8 @@ import mlflow
 import numpy as np
 from tqdm import tqdm
 
+from predict import YoloPredictor
+
 YOLOV5_DIR = os.path.join(os.path.dirname(__file__), '../yolov5/')
 DATASET_DIR = os.path.join(os.path.dirname(__file__), '../dataset/')
 
@@ -104,6 +106,16 @@ def train(
         epochs=epochs,
         weights=weights,
         cfg=cfg,
+    )
+
+    artifacts = {
+        'weight': weights
+    }
+    mlflow.pyfunc.log_model(
+        artifact_path="py_model",
+        python_model=YoloPredictor(),
+        artifacts=artifacts,
+        registered_model_name="yolov5",
     )
 
 

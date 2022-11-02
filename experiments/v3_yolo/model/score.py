@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from experiments.v3_yolo.score.predict import YoloPredictor
+from predict import YoloPredictor
 
 
 # metric
