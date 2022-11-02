@@ -8,3 +8,9 @@
 
 cd train
 docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset $(docker build . -qq)
+
+# Run score
+
+cd score
+docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset -v
+/tmp/ml-system-design-22/experiments/v3_yolo/sample_weight:/opt/sample_weight $(docker build . -qq)
