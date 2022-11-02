@@ -1,3 +1,16 @@
-!git clone https://github.com/ultralytics/yolov5
-%cd yolov5
-%pip install -qr requirements.txt # install dependencies
+## Dataset (http://shuoyang1213.me/WIDERFACE/):
+
+- **Train**: https://drive.google.com/file/d/15hGDLhsx8bLgLcIRD5DhYt5iBxnjNF1M/view?usp=sharing
+- **Validation**: https://drive.google.com/file/d/1GUCogbp16PMGa39thoMMeWxp7Rp5oM8Q/view?usp=sharing
+- **Annotations**: http://shuoyang1213.me/WIDERFACE/support/bbx_annotation/wider_face_split.zip
+
+## Run train
+
+cd train
+docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset $(docker build . -qq)
+
+# Run score
+
+cd score
+docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset -v
+/tmp/ml-system-design-22/experiments/v3_yolo/sample_weight:/opt/sample_weight $(docker build . -qq)
