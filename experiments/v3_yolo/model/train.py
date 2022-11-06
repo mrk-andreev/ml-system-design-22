@@ -12,6 +12,8 @@ from predict import YoloPredictor
 
 YOLOV5_DIR = os.path.join(os.path.dirname(__file__), '../yolov5/')
 DATASET_DIR = os.path.join(os.path.dirname(__file__), '../dataset/')
+TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URL", 'http://localhost:5000')
+DEVICE = os.environ.get('DEVICE', 'cpu')
 
 
 def export_dataset(task_name, output_val_img_dir, output_val_labels_dir, val_labels_path, val_img_path):
@@ -93,6 +95,7 @@ def train(
         epochs,
         weights,
         cfg,
+        device,
 ):
     from yolov5.train import run
 
@@ -106,6 +109,7 @@ def train(
         epochs=epochs,
         weights=weights,
         cfg=cfg,
+        device=device
     )
 
     artifacts = {
@@ -119,7 +123,7 @@ def train(
     )
 
 
-def run(workdir):
+def run(workdir, device):
     np.random.seed(101)
 
     export_dataset(
@@ -154,15 +158,16 @@ def run(workdir):
         epochs=1,
         weights=f'{workdir}/output/yolov5m.pt',
         cfg=os.path.join(YOLOV5_DIR, 'models/yolov5n.yaml'),
+        device=device,
     )
 
 
 def main():
-    mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URL", 'http://localhost:5000'))
+    mlflow.set_tracking_uri(TRACKING_URI)
     with mlflow.start_run():
         mlflow.autolog()
         with tempfile.TemporaryDirectory() as workdir:
-            run(workdir)
+            run(workdir, DEVICE)
 
 
 if __name__ == '__main__':
