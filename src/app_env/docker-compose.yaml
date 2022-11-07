@@ -13,8 +13,8 @@ services:
     networks:
       - mlsystemdesign22net
     ports:
-      - 9000:9000
-      - 9001:9001
+      - "9000:9000"
+      - "9001:9001"
 
   minio-init-bucket:
     restart: on-failure
@@ -41,7 +41,7 @@ services:
     networks:
       - mlsystemdesign22net
     ports:
-      - 5000:5000
+      - "5500:5500"
     environment:
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: miniouser
@@ -72,7 +72,7 @@ services:
       context: airflow
     restart: always
     networks:
-    - mlsystemdesign22net
+      - mlsystemdesign22net
     ports:
       - "8080:8080"
     volumes:
@@ -82,6 +82,14 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "1"
     command: airflow standalone
+
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+      - "5000:5000"
+    networks:
+      - mlsystemdesign22net
 
 
 volumes:
