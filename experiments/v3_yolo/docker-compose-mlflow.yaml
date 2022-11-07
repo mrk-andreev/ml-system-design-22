@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  mlflow:
+    restart: always
+    build:
+      context: mlflow
+      dockerfile: Dockerfile
+    tty: true
+    network_mode: host
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://localhost:9000
+      AWS_ACCESS_KEY_ID: miniouser
+      AWS_SECRET_ACCESS_KEY: miniopassword
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: postgres
+      S3_BUCKET: mlsystemdesign22
+      S3_BUCKET_PREFIX: mlflow
+
+  mlflow-db:
+    image: postgres:13.2-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    logging:
+      options:
+        max-size: 10m

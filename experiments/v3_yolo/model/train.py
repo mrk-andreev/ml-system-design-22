@@ -9,11 +9,12 @@ import numpy as np
 from tqdm import tqdm
 
 from predict import YoloPredictor
+from model_utils import download_dataset
 
 YOLOV5_DIR = os.path.join(os.path.dirname(__file__), '../yolov5/')
 DATASET_DIR = os.path.join(os.path.dirname(__file__), '../dataset/')
-TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URL", 'http://localhost:5000')
-DEVICE = os.environ.get('DEVICE', 'cpu')
+TRACKING_URI = os.environ['MLFLOW_TRACKING_URL']
+DEVICE = os.environ['DEVICE']
 
 
 def export_dataset(task_name, output_val_img_dir, output_val_labels_dir, val_labels_path, val_img_path):
@@ -24,6 +25,8 @@ def export_dataset(task_name, output_val_img_dir, output_val_labels_dir, val_lab
         lines = annots.readlines()
 
     names = [x for x in lines if 'jpg' in x]
+    names = names[:len(names) // 10] # TODO: remove me
+
     indices = [lines.index(x) for x in names]
 
     for n in tqdm(range(len(names[:])), desc=task_name):
@@ -115,9 +118,12 @@ def train(
     artifacts = {
         'weight': weights
     }
+    predictor = YoloPredictor()
+    context = mlflow.pyfunc.PythonModelContext(artifacts)
+    predictor.load_context(context)
     mlflow.pyfunc.log_model(
-        artifact_path="py_model",
-        python_model=YoloPredictor(),
+        artifact_path="py_data",
+        python_model=predictor,
         artifacts=artifacts,
         registered_model_name="yolov5",
     )
@@ -125,6 +131,8 @@ def train(
 
 def run(workdir, device):
     np.random.seed(101)
+
+    download_dataset()
 
     export_dataset(
         "export_val",

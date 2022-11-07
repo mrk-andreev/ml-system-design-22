@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  train:
+    build:
+      context: model
+      dockerfile: Dockerfile
+    command: train.py
+    network_mode: host
+    ipc: host
+    tty: true
+    environment:
+      S3_ENDPOINT: http://localhost:9000
+      S3_USER: miniouser
+      S3_PASSWORD: miniopassword
+      S3_BUCKET: mlsystemdesign22
+      S3_BUCKET_DATASET_PREFIX: dataset
+      DEVICE: cpu
+      MLFLOW_TRACKING_URL: http://localhost:5000
