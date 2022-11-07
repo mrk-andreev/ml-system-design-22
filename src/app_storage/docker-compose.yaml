@@ -5,6 +5,8 @@ services:
     restart: always
     image: quay.io/minio/minio:RELEASE.2022-10-08T20-11-00Z
     command: server /data --console-address ":9001"
+    volumes:
+      - minio-storage:/data
     environment:
       MINIO_ROOT_USER: "miniouser"
       MINIO_ROOT_PASSWORD: "miniopassword"
@@ -33,3 +35,6 @@ services:
           /bin/sh /tmp/upload_dataset.sh
           exit 0;
       "
+
+volumes:
+  minio-storage:
