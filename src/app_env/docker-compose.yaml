@@ -19,6 +19,8 @@ services:
     build:
       dockerfile: Dockerfile
       context: init_bucket/
+    volumes:
+      - minio-init-bucket:/opt/minio-init-bucket
     depends_on:
       - minio
     environment:
@@ -27,7 +29,35 @@ services:
       S3_PASSWORD: "miniopassword"
       S3_BUCKET: "mlsystemdesign22"
 
+  mlflow:
+    restart: always
+    build:
+      context: mlflow
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: miniouser
+      AWS_SECRET_ACCESS_KEY: miniopassword
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_HOST: mlflow-db
+      DB_PORT: 5432
+      DB_NAME: postgres
+      S3_BUCKET: mlsystemdesign22
+      S3_BUCKET_PREFIX: mlflow
 
+  mlflow-db:
+    image: postgres:13.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    logging:
+      options:
+        max-size: 10m
 
 volumes:
   minio-storage:
+  minio-init-bucket:
