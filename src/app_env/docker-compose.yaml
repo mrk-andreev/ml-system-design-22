@@ -94,15 +94,32 @@ services:
   registry:
     image: registry:2
     restart: always
+    volumes:
+      - registry:/var/lib/registry
     ports:
       - "5000:5000"
     networks:
       - mlsystemdesign22net
 
+  init-images:
+    restart: on-failure
+    build:
+      dockerfile: Dockerfile
+      context: init_images/
+    networks:
+      - mlsystemdesign22net
+    volumes:
+      - ../app_model:/opt/app_model:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    depends_on:
+      - registry
+
 
 volumes:
   minio-storage:
   minio-init-bucket:
+  registry:
 
 networks:
   mlsystemdesign22net:
