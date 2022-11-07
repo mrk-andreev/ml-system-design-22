@@ -14,27 +14,20 @@ services:
       - 9000:9000
       - 9001:9001
 
-  minio-create-bucket:
+  minio-init-bucket:
     restart: on-failure
     build:
       dockerfile: Dockerfile
-      context: .
-    volumes:
-      - ./init_bucket.sh:/tmp/init_bucket.sh:ro
-      - ./upload_dataset.sh:/tmp/upload_dataset.sh:ro
+      context: init_bucket/
     depends_on:
       - minio
     environment:
-      S3_ENDPOINT: http://minio:9000
-      S3_USER: miniouser
-      S3_PASSWORD: miniopassword
-      S3_BUCKET: mlsystemdesign22
-    entrypoint: >
-      /bin/sh -c "
-          /bin/sh /tmp/init_bucket.sh
-          /bin/sh /tmp/upload_dataset.sh
-          exit 0;
-      "
+      S3_ENDPOINT: "http://minio:9000"
+      S3_USER: "miniouser"
+      S3_PASSWORD: "miniopassword"
+      S3_BUCKET: "mlsystemdesign22"
+
+
 
 volumes:
   minio-storage:
