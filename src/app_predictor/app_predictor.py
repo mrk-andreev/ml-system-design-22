@@ -13,6 +13,7 @@ from typing import List
 
 import boto3
 import cv2
+import mlflow
 import redis
 import requests
 from telegram import Bot
@@ -23,6 +24,10 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 CACHE = {}
+
+MODEL_NAME = os.environ['MODEL_NAME']
+MODEL_STAGE = os.environ['MODEL_STAGE']
+TRACKING_URI = os.environ['MLFLOW_TRACKING_URL']
 
 
 class PredictWriter(abc.ABC):
@@ -59,7 +64,10 @@ class S3PredictWriter(PredictWriter):
     def save(self, req, predicts):
         obj_name = f"{self._path_prefix}/{datetime.datetime.now().timestamp()}-{uuid.uuid4()}.json"
         obj = self._s3.Object(self._bucket_name, obj_name)
-        obj.put(Body=json.dumps({"req": req, "predicts": predicts}, cls=CustomEncoder))
+        obj.put(Body=json.dumps({
+            "req": req,
+            "predicts": predicts
+        }, cls=CustomEncoder))
 
 
 def init_predict_writer():
@@ -107,27 +115,27 @@ class Cv2CascadeClassifierPredictor(BasePredictor):
 
 
 def init_predictor():
-    return Cv2CascadeClassifierPredictor(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
-    )
+
+    mlflow.set_tracking_uri(TRACKING_URI)
+    return mlflow.pyfunc.load_model(f'models:/{MODEL_NAME}/{MODEL_STAGE}')
 
 
 def blur(img, rects: typing.List[Rect]):
     img = img.copy()
     for rect in rects:
         if (
-            rect.y < 0
-            or rect.y > img.shape[0]
-            or (rect.y + rect.h) > img.shape[0]
-            or rect.x < 0
-            or rect.x > img.shape[1]
-            or rect.x + rect.w > img.shape[1]
+                rect.y < 0
+                or rect.y > img.shape[0]
+                or (rect.y + rect.h) > img.shape[0]
+                or rect.x < 0
+                or rect.x > img.shape[1]
+                or rect.x + rect.w > img.shape[1]
         ):
             warnings.warn("Rect out of image")
             continue
 
-        img[rect.y : rect.y + rect.h, rect.x : rect.x + rect.w, :] = cv2.blur(
-            img[rect.y : rect.y + rect.h, rect.x : rect.x + rect.w, :], ksize=(rect.w // 2, rect.h // 2)
+        img[rect.y: rect.y + rect.h, rect.x: rect.x + rect.w, :] = cv2.blur(
+            img[rect.y: rect.y + rect.h, rect.x: rect.x + rect.w, :], ksize=(rect.w // 2, rect.h // 2)
         )
 
     return img
@@ -164,7 +172,6 @@ class DataReceiver:
 
 
 class BlobStorageReader(abc.ABC):
-    @abc.abstractmethod
     @property
     def storage(self):
         pass
