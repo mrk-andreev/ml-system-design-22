@@ -10,6 +10,8 @@ services:
     environment:
       MINIO_ROOT_USER: "miniouser"
       MINIO_ROOT_PASSWORD: "miniopassword"
+    networks:
+      - mlsystemdesign22net
     ports:
       - 9000:9000
       - 9001:9001
@@ -21,6 +23,8 @@ services:
       context: init_bucket/
     volumes:
       - minio-init-bucket:/opt/minio-init-bucket
+    networks:
+      - mlsystemdesign22net
     depends_on:
       - minio
     environment:
@@ -34,6 +38,8 @@ services:
     build:
       context: mlflow
       dockerfile: Dockerfile
+    networks:
+      - mlsystemdesign22net
     ports:
       - 5000:5000
     environment:
@@ -54,10 +60,33 @@ services:
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
+    networks:
+      - mlsystemdesign22net
     logging:
       options:
         max-size: 10m
 
+  airflow:
+    build:
+      dockerfile: Dockerfile
+      context: airflow
+    restart: always
+    networks:
+    - mlsystemdesign22net
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "1"
+    command: airflow standalone
+
+
 volumes:
   minio-storage:
   minio-init-bucket:
+
+networks:
+  mlsystemdesign22net:
