@@ -25,7 +25,7 @@ def export_dataset(task_name, output_val_img_dir, output_val_labels_dir, val_lab
         lines = annots.readlines()
 
     names = [x for x in lines if 'jpg' in x]
-    names = names[:len(names) // 10] # TODO: remove me
+    # names = names[:len(names) // 10] # TODO: remove me
 
     indices = [lines.index(x) for x in names]
 
