@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  redis:
+    restart: always
+    image: redis:7.0.5
+    ports:
+      - "6379:6379"
+
+  app_receiver:
+    depends_on:
+      - redis
+    restart: always
+    build:
+      context: ../../src/app_receiver
+      dockerfile: Dockerfile
+    network_mode: host
+    environment:
+      REDIS_QUEUE: "queue:in_images"
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      S3_ACCESS_KEY_ID: miniouser
+      S3_BUCKET_NAME: mlsystemdesign22
+      S3_ENDPOINT_URL: http://localhost:9000
+      S3_PATH_PREFIX: images
+      S3_SECRET_ACCESS_KEY: miniopassword
+
+
+  app_predictor:
+    depends_on:
+      - redis
+    restart: always
+    build:
+      context: ../../src/app_predictor
+      dockerfile: Dockerfile
+    network_mode: host
+    environment:
+      REDIS_QUEUE: "queue:in_images"
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      BLOB_STORAGE_PROVIDER: S3
+      S3_ACCESS_KEY_ID: miniouser
+      S3_BUCKET_NAME: mlsystemdesign22
+      S3_ENDPOINT_URL: http://localhost:9000
+      S3_PATH_PREFIX: predicts
+      S3_SECRET_ACCESS_KEY: miniopassword
+      MODEL_NAME: yolov5
+      MODEL_STAGE: Production
+      MLFLOW_TRACKING_URL: http://localhost:5000

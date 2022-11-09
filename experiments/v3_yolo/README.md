@@ -7,10 +7,10 @@
 ## Run train
 
 cd model
-docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset $(docker build . -qq) train.py
+docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset --network=host --ipc=host $(docker build . -qq) train.py
 
 # Run score
 
 cd model
 docker run -v /tmp/ml-system-design-22/experiments/v3_yolo/dataset:/opt/dataset -v
-/tmp/ml-system-design-22/experiments/v3_yolo/sample_weight:/opt/sample_weight $(docker build . -qq) score.py
+/tmp/ml-system-design-22/experiments/v3_yolo/sample_weight:/opt/sample_weight --network=host --ipc=host $(docker build . -qq) score.py

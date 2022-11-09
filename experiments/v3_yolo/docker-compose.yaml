@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  minio:
+    restart: always
+    image: quay.io/minio/minio:RELEASE.2022-10-08T20-11-00Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "miniouser"
+      MINIO_ROOT_PASSWORD: "miniopassword"
+    ports:
+      - 9000:9000
+      - 9001:9001
+
+  minio-create-bucket:
+    restart: on-failure
+    image: quay.io/minio/mc:RELEASE.2022-10-09T21-10-59Z
+    volumes:
+      - ./dataset:/tmp/dataset:ro
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 miniouser miniopassword;
+      /usr/bin/mc mb myminio/mlsystemdesign22;
+
+      /usr/bin/mc cp --recursive /tmp/dataset myminio/mlsystemdesign22/;
+
+      exit 0;
+      "
