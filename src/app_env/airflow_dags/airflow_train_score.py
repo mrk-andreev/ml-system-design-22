@@ -3,11 +3,16 @@ from datetime import datetime
 
 from airflow.models import DAG
 from airflow.operators.python import task
-from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from kubernetes.client.models import V1Volume
+from kubernetes.client.models import V1VolumeMount
 from mlflow import MlflowClient
 
-MODEL_IMAGE = os.environ['ENDPOINT_IMAGE_REGISTRY'] + 'model:latest'
-INNER_TRACKING_URI = os.environ['ENDPOINT_MLFLOW_TRACKING_URL_INNER_URL']
+KUBE_NAMESPACE = os.environ['KUBE_NAMESPACE']
+KUBE_CONFIG_FILE = os.environ['KUBE_CONFIG_FILE']
+KUBE_CLUSTER_CONTEXT = os.environ['KUBE_CLUSTER_CONTEXT']
+IMAGE_REGISTRY = os.environ['ENDPOINT_IMAGE_REGISTRY']
+INNER_TRACKING_URI = 'http://' + os.environ['NODE_IP'] + ':5500'
 MODEL_NAME = 'yolov5'
 S3_BUCKET_DATASET_PREFIX = 'dataset'
 DEVICE = 'cpu'
@@ -19,15 +24,26 @@ with DAG(
         catchup=False,
         tags=['yolov5'],
 ) as dag:
-    train = DockerOperator(
-        docker_url='unix://var/run/docker.sock',
-        command='train.py',
-        image=MODEL_IMAGE,
-        network_mode='host',
+    volume = V1Volume(name='train-dir', empty_dir={
+        'sizeLimit': '4Gi',
+        'medium': 'Memory'
+    })
+    volume_mount = V1VolumeMount(name='train-dir', mount_path='/dev/shm')
+
+    train = KubernetesPodOperator(
+        name='train',
         task_id='train',
-        dag=dag,
-        shm_size=2147483648,
-        environment={
+        namespace=KUBE_NAMESPACE,
+        in_cluster=False,
+        config_file=KUBE_CONFIG_FILE,
+        cluster_context=KUBE_CLUSTER_CONTEXT,
+        volumes=[volume],
+        volume_mounts=[volume_mount],
+        is_delete_operator_pod=True,
+        get_logs=True,
+        arguments=['train.py'],
+        image=IMAGE_REGISTRY + 'model:latest',
+        env_vars={
             'S3_ENDPOINT': os.environ['SECRET_S3_ENDPOINT'],
             'S3_USER': os.environ['SECRET_S3_ACCESS_TOKEN'],
             'S3_PASSWORD': os.environ['SECRET_S3_SECRET_TOKEN'],
@@ -35,18 +51,23 @@ with DAG(
             'S3_BUCKET_DATASET_PREFIX': S3_BUCKET_DATASET_PREFIX,
             'DEVICE': DEVICE,
             'MLFLOW_TRACKING_URL': os.environ['ENDPOINT_MLFLOW_TRACKING_URL_EXTERNAL_URL'],
-        }
+        },
     )
 
-    score = DockerOperator(
-        docker_url='unix://var/run/docker.sock',
-        command='score.py',
-        image=MODEL_IMAGE,
-        network_mode='host',
+    score = KubernetesPodOperator(
+        name='score',
         task_id='score',
-        dag=dag,
-        shm_size=2147483648,
-        environment={
+        namespace=KUBE_NAMESPACE,
+        in_cluster=False,
+        config_file=KUBE_CONFIG_FILE,
+        cluster_context=KUBE_CLUSTER_CONTEXT,
+        volumes=[volume],
+        volume_mounts=[volume_mount],
+        is_delete_operator_pod=True,
+        get_logs=True,
+        arguments=['score.py'],
+        image=IMAGE_REGISTRY + 'model:latest',
+        env_vars={
             'S3_ENDPOINT': os.environ['SECRET_S3_ENDPOINT'],
             'S3_USER': os.environ['SECRET_S3_ACCESS_TOKEN'],
             'S3_PASSWORD': os.environ['SECRET_S3_SECRET_TOKEN'],
