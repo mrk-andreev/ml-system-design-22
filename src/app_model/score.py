@@ -78,7 +78,9 @@ def evaluate_score():
 
     sum_iou = 0
     cnt = 0
-    for filename in tqdm(glob(img_dir + '*/*.jpg')):
+    files = glob(img_dir + '*/*.jpg')
+    files = files[:len(glob(img_dir + '*/*.jpg')) // 10]  # TODO: remove me
+    for filename in tqdm(files):
         name = filename[len(img_dir):]
 
         y_pred_raw = predictor.predict(cv2.imread(filename))
