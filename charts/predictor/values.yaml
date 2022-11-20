@@ -1,0 +1,13 @@
+ingress:
+  ingressClass: nginx
+
+replicas: 1
+updateStrategy: RollingUpdate
+restartPolicy: 'Always'
+imagePullSecrets:
+  secretName:
+image:
+  registry:
+  repository: predictor
+  tag: latest
+imagePullPolicy: 'Always'

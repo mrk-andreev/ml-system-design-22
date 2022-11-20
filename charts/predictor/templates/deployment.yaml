@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: predictor
+  labels:
+    app: predictor
+spec:
+  replicas: {{.Values.replicas}}
+  strategy:
+    type: {{.Values.updateStrategy}}
+  selector:
+    matchLabels:
+      app: predictor
+  template:
+    metadata:
+      labels:
+        app: predictor
+    spec:
+      restartPolicy: {{.Values.restartPolicy }}
+      {{- if .Values.imagePullSecrets.secretName }}
+      imagePullSecrets:
+        - name: {{.Values.imagePullSecrets.secretName}}
+      {{- end }}
+      volumes:
+        - name: predictor-tmp
+          emptyDir: { }
+      containers:
+        - name: predictor
+          image: '{{.Values.image.registry}}{{.Values.image.repository}}:{{.Values.image.tag}}'
+          imagePullPolicy: {{.Values.imagePullPolicy}}
+          volumeMounts:
+            - mountPath: /tmp
+              name: predictor-tmp
