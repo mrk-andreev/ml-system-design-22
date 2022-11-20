@@ -15,6 +15,8 @@ spec:
     metadata:
       labels:
         app: predictor
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
     spec:
       restartPolicy: {{.Values.restartPolicy }}
       {{- if .Values.imagePullSecrets.secretName }}
@@ -28,6 +30,9 @@ spec:
         - name: predictor
           image: '{{.Values.image.registry}}{{.Values.image.repository}}:{{.Values.image.tag}}'
           imagePullPolicy: {{.Values.imagePullPolicy}}
+          envFrom:
+            - configMapRef:
+                name: predictor-config
           volumeMounts:
             - mountPath: /tmp
               name: predictor-tmp

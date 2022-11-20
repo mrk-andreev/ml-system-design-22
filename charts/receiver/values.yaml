@@ -11,3 +11,22 @@ image:
   repository: receiver
   tag: latest
 imagePullPolicy: 'Always'
+
+
+integrations:
+  s3:
+    endpointUrl: ''
+    accessKey: ''
+    secretKey: ''
+    bucket: ''
+    pathPrefix: ''
+    feedbackPathPrefix: ''
+    verify: false
+  telegram:
+    token: ''
+  redis:
+    host: ''
+    port: ''
+    queue: ''
+    username: ''
+    password: ''
