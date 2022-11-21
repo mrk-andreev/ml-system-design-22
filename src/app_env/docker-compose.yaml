@@ -58,14 +58,6 @@ services:
     networks:
       - mlsystemdesign22net
 
-  redis:
-    restart: always
-    image: redis:7.0.5
-    networks:
-      - mlsystemdesign22net
-    ports:
-      - "6379:6379"
-
   minio:
     restart: always
     image: quay.io/minio/minio:RELEASE.2022-10-08T20-11-00Z
