@@ -1,6 +1,3 @@
-ingress:
-  ingressClass: nginx
-
 replicas: 1
 updateStrategy: RollingUpdate
 restartPolicy: 'Always'
