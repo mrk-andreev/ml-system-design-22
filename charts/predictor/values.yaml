@@ -4,7 +4,7 @@ restartPolicy: 'Always'
 imagePullSecrets:
   secretName: ''
 image:
-  registry: ''
+  registry: 'registry:5000/'
   repository: predictor
   tag: latest
 imagePullPolicy: 'Always'
