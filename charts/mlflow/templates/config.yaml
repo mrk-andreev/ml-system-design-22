@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mlflow-config
+data:
+  MLFLOW_S3_ENDPOINT_URL: {{.Values.integrations.s3.endpointUrl | quote}}
+  AWS_ACCESS_KEY_ID: {{.Values.integrations.s3.accessKey | quote}}
+  AWS_SECRET_ACCESS_KEY: {{.Values.integrations.s3.secretKey | quote}}
+  S3_BUCKET: {{.Values.integrations.s3.bucket | quote}}
+  S3_BUCKET_PREFIX: {{.Values.integrations.s3.bucketPrefix | quote}}
+  DB_USER: {{.Values.integrations.db.user | quote}}
+  DB_PASS: {{.Values.integrations.db.password | quote}}
+  DB_HOST: {{.Values.integrations.db.host | quote}}
+  DB_PORT: {{.Values.integrations.db.port | quote}}
+  DB_NAME: {{.Values.integrations.db.name | quote}}
+
