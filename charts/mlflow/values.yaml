@@ -1,0 +1,29 @@
+ingress:
+  ingressClass: nginx
+
+replicas: 1
+updateStrategy: RollingUpdate
+restartPolicy: 'Always'
+imagePullSecrets:
+  secretName:
+image:
+  registry:
+  repository: mlflow
+  tag: latest
+imagePullPolicy: 'Always'
+
+
+integrations:
+  s3:
+    endpointUrl: 'http://minio:9000'
+    accessKey: 'miniouser'
+    secretKey: 'miniopassword'
+    bucket: 'mlsystemdesign22'
+    bucketPrefix: 'mlflow'
+  db:
+    user: 'postgres'
+    password: 'postgres'
+    host: 'mlflow-db'
+    port: 5432
+    name: 'postgres'
+

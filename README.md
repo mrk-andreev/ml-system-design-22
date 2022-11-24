@@ -20,6 +20,10 @@ Telegram bot "Photo Anonymization". You upload a photo, the faces are programmat
 
 ![Image](docs/images/model-flow-diagram.png)
 
+**Deployment schema**
+
+![Image](docs/images/deployment.png)
+
 ## Authors
 
 - [Mark Andreev](https://github.com/mrk-andreev)

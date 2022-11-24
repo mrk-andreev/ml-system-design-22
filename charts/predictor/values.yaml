@@ -1,0 +1,33 @@
+replicas: 1
+updateStrategy: RollingUpdate
+restartPolicy: 'Always'
+imagePullSecrets:
+  secretName: ''
+image:
+  registry: 'registry:5000/'
+  repository: predictor
+  tag: latest
+imagePullPolicy: 'Always'
+
+model:
+  name: ''
+  stage: ''
+
+integrations:
+  mlflow:
+    trackingUrl: ''
+  s3:
+    endpointUrl: ''
+    accessKey: ''
+    secretKey: ''
+    bucket: ''
+    pathPrefix: ''
+    verify: false
+  telegram:
+    token: ''
+  redis:
+    host: ''
+    port: ''
+    queue: ''
+    username: ''
+    password: ''

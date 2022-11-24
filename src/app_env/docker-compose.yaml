@@ -58,14 +58,6 @@ services:
     networks:
       - mlsystemdesign22net
 
-  redis:
-    restart: always
-    image: redis:7.0.5
-    networks:
-      - mlsystemdesign22net
-    ports:
-      - "6379:6379"
-
   minio:
     restart: always
     image: quay.io/minio/minio:RELEASE.2022-10-08T20-11-00Z
@@ -143,6 +135,7 @@ services:
     volumes:
       - ./_k3s/kubeconfig.yaml:/root/.kube/config:ro
       - ./airflow_dags/airflow_train_score.py:/root/airflow/dags/airflow_train_score.py:ro
+      - ./airflow_dags/airflow_deploy.py:/root/airflow/dags/airflow_deploy.py:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
     environment:
@@ -159,6 +152,12 @@ services:
       KUBE_NAMESPACE: 'default'
       KUBE_CONFIG_FILE: '/root/.kube/config'
       KUBE_CLUSTER_CONTEXT: 'default'
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      REDIS_HOST: ${NODE_IP}
+      REDIS_PORT: 6379
+      REDIS_QUEUE: queue:in_images
+      REDIS_USERNAME: ''
+      REDIS_PASSWORD: ''
 
     command: airflow standalone
 

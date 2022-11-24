@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: receiver
+  labels:
+    app: receiver
+spec:
+  replicas: {{.Values.replicas}}
+  strategy:
+    type: {{.Values.updateStrategy}}
+  selector:
+    matchLabels:
+      app: receiver
+  template:
+    metadata:
+      labels:
+        app: receiver
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      restartPolicy: {{.Values.restartPolicy }}
+      {{- if .Values.imagePullSecrets.secretName }}
+      imagePullSecrets:
+        - name: {{.Values.imagePullSecrets.secretName}}
+      {{- end }}
+      volumes:
+        - name: receiver-tmp
+          emptyDir: { }
+      containers:
+        - name: receiver
+          image: '{{.Values.image.registry}}{{.Values.image.repository}}:{{.Values.image.tag}}'
+          imagePullPolicy: {{.Values.imagePullPolicy}}
+          envFrom:
+            - configMapRef:
+                name: receiver-config
+          volumeMounts:
+            - mountPath: /tmp
+              name: receiver-tmp
