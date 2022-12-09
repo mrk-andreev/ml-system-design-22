@@ -4,9 +4,9 @@ restartPolicy: 'Always'
 imagePullSecrets:
   secretName:
 image:
-  registry:
-  repository: receiver
-  tag: latest
+  registry: 'markandreev/'
+  repository: 'receiver'
+  tag: '20221208'
 imagePullPolicy: 'Always'
 
 
