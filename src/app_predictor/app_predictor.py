@@ -115,9 +115,15 @@ class Cv2CascadeClassifierPredictor(BasePredictor):
 
 
 def init_predictor():
-
-    mlflow.set_tracking_uri(TRACKING_URI)
-    return mlflow.pyfunc.load_model(f'models:/{MODEL_NAME}/{MODEL_STAGE}')
+    try:
+        mlflow.set_tracking_uri(TRACKING_URI)
+        return mlflow.pyfunc.load_model(f'models:/{MODEL_NAME}/{MODEL_STAGE}')
+    except Exception as e:
+        logger.exception(e)
+        logger.warning("Use stub predictor")
+        return Cv2CascadeClassifierPredictor(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
+        )
 
 
 def blur(img, rects: typing.List[Rect]):
