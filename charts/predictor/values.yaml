@@ -4,9 +4,9 @@ restartPolicy: 'Always'
 imagePullSecrets:
   secretName: ''
 image:
-  registry: 'registry:5000/'
-  repository: predictor
-  tag: latest
+  registry: 'markandreev/'
+  repository: 'predictor'
+  tag: '20221208'
 imagePullPolicy: 'Always'
 
 model:
