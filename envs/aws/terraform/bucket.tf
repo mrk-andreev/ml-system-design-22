@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "this" {
-  bucket = "ml-system-design-22"
+  bucket = var.bucket_name
 
   tags = {
     Project = "ml-system-design-22"

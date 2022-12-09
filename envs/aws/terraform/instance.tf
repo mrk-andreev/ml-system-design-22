@@ -7,6 +7,8 @@ resource "aws_instance" "this" {
     volume_size = var.instance_volume_size
   }
 
+  iam_instance_profile = aws_iam_instance_profile.this.name
+
   user_data = <<-EOF
                 #!/bin/bash
                 sudo apt update -qq \

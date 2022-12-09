@@ -9,3 +9,7 @@ variable "instance_type" {
 variable "instance_volume_size" {
   default = 32
 }
+
+variable "bucket_name" {
+  default = "ml-system-design-22"
+}
