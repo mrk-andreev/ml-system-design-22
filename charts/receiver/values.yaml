@@ -7,7 +7,7 @@ image:
   registry: 'markandreev/'
   repository: 'receiver'
   tag: '20221208'
-imagePullPolicy: 'Always'
+imagePullPolicy: 'IfNotPresent'
 
 
 integrations:
