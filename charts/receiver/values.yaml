@@ -4,10 +4,10 @@ restartPolicy: 'Always'
 imagePullSecrets:
   secretName:
 image:
-  registry:
-  repository: receiver
-  tag: latest
-imagePullPolicy: 'Always'
+  registry: 'markandreev/'
+  repository: 'receiver'
+  tag: '20221208'
+imagePullPolicy: 'IfNotPresent'
 
 
 integrations:

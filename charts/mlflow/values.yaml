@@ -10,7 +10,7 @@ image:
   registry:
   repository: mlflow
   tag: latest
-imagePullPolicy: 'Always'
+imagePullPolicy: 'IfNotPresent'
 
 
 integrations:
