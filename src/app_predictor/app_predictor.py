@@ -52,8 +52,8 @@ class S3PredictWriter(PredictWriter):
         self._s3 = boto3.resource(
             "s3",
             endpoint_url=endpoint_url,  # 'https://<minio>:9000'
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key,
+            aws_access_key_id=access_key_id if access_key_id else None,
+            aws_secret_access_key=secret_access_key if secret_access_key else None,
             aws_session_token=None,
             config=boto3.session.Config(signature_version="s3v4"),
             verify=verify,
@@ -226,8 +226,8 @@ class S3BlobStorageReader(BlobStorageReader):
         self._s3 = boto3.resource(
             "s3",
             endpoint_url=endpoint_url,  # 'https://<minio>:9000'
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key,
+            aws_access_key_id=access_key_id if access_key_id else None,
+            aws_secret_access_key=secret_access_key if secret_access_key else None,
             aws_session_token=None,
             config=boto3.session.Config(signature_version="s3v4"),
             verify=verify,

@@ -6,7 +6,7 @@ imagePullSecrets:
 image:
   registry: 'markandreev/'
   repository: 'receiver'
-  tag: '20221208'
+  tag: '20221209-3'
 imagePullPolicy: 'IfNotPresent'
 
 

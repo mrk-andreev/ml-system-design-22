@@ -1,5 +1,5 @@
 #bin/bash
-# example: bash scripts/build_image_receiver.bash markandreev/receiver:20221208
+# example: bash scripts/build_image_receiver.bash markandreev/receiver:20221209-3
 
 
 set -e
