@@ -36,3 +36,20 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: receiver-tmp
+          ports:
+            - containerPort: 8001
+          startupProbe:
+            httpGet:
+              path: /prometheus
+              port: 8001
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /prometheus
+              port: 8001
+          livenessProbe:
+            httpGet:
+              path: /prometheus
+              port: 8001

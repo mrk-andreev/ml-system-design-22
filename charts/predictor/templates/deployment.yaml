@@ -36,3 +36,20 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: predictor-tmp
+          ports:
+            - containerPort: 8000
+          startupProbe:
+            httpGet:
+              path: /prometheus
+              port: 8000
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /prometheus
+              port: 8000
+          livenessProbe:
+            httpGet:
+              path: /prometheus
+              port: 8000

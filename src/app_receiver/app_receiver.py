@@ -18,6 +18,7 @@ from telegram.ext import (
     MessageHandler,
     Updater,
 )
+from prometheus_client import start_http_server
 
 # Enable logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -226,6 +227,7 @@ class BotCommandDispatcher:
 
 
 def main() -> None:
+    start_http_server(8001)
     bot_command_dispatcher = BotCommandDispatcher(init_task_creator(), new_blob_storage(), new_feedback_storage())
     updater = Updater(os.environ["TELEGRAM_BOT_TOKEN"])
     dispatcher = updater.dispatcher
