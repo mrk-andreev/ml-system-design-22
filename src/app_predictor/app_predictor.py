@@ -19,6 +19,8 @@ import requests
 from telegram import Bot
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
+from prometheus_client import start_http_server
+
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
@@ -304,6 +306,7 @@ def init_data_receiver():
 
 
 def main():
+    start_http_server(8000)
     data_uploader = init_data_uploader()
     storages = init_storages()
     predict_saver = init_predict_writer()
