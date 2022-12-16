@@ -19,12 +19,16 @@ import requests
 from telegram import Bot
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
-from prometheus_client import start_http_server
+from prometheus_client import start_http_server, Summary
 
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+LOAD_IMAGE_TIME = Summary('load_image_request_processing_seconds', 'Time spent processing request')
+TRANSFORM_IMAGE_TIME = Summary('transform_image_request_processing_seconds', 'Time spent processing request')
+UPLOAD_IMAGE_TIME = Summary('upload_image_request_processing_seconds', 'Time spent processing request')
+
 CACHE = {}
 
 MODEL_NAME = os.environ['MODEL_NAME']
@@ -149,6 +153,7 @@ def blur(img, rects: typing.List[Rect]):
     return img
 
 
+@TRANSFORM_IMAGE_TIME.time()
 def transform(predict_saver, predictor: BasePredictor, req, img):
     faces = predictor.predict(img)
     predict_saver.save(req, faces)
@@ -246,6 +251,7 @@ class S3BlobStorageReader(BlobStorageReader):
             f.write(self._s3.Object(bucket, obj_name).get()["Body"].read())
 
 
+@LOAD_IMAGE_TIME.time()
 def load_image(req, storages: typing.Dict[str, BlobStorageReader]):
     logger.info("Load %s", req)
     storage, href = req["img"]["storage"], req["img"]["href"]
@@ -263,6 +269,7 @@ class DataUploader:
     def __init__(self, token):
         self._b = Bot(token)
 
+    @UPLOAD_IMAGE_TIME.time()
     def upload(self, req, img):
         with tempfile.TemporaryDirectory() as tdir:
             fpath = os.path.join(tdir, "sample.jpg")

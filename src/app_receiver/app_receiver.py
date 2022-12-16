@@ -18,12 +18,19 @@ from telegram.ext import (
     MessageHandler,
     Updater,
 )
-from prometheus_client import start_http_server
+from prometheus_client import start_http_server, Summary
+
 
 # Enable logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+
+FETCH_IMAGE_TIME = Summary('fetch_image_request_processing_seconds', 'Time spent processing request')
+FETCH_FEEDBACK_TIME = Summary('fetch_feedback_request_processing_seconds', 'Time spent processing request')
+FETCH_HELP_TIME = Summary('fetch_help_request_processing_seconds', 'Time spent processing request')
+FETCH_START_TIME = Summary('fetch_start_request_processing_seconds', 'Time spent processing request')
 
 
 class BlobStorageWriter(abc.ABC):
@@ -193,6 +200,7 @@ class BotCommandDispatcher:
         self._feedback_storage = feedback_storage
 
     @classmethod
+    @FETCH_START_TIME.time()
     def start(cls, update: Update, _: CallbackContext) -> None:
         user = update.effective_user
         update.message.reply_markdown_v2(
@@ -201,15 +209,18 @@ class BotCommandDispatcher:
         )
 
     @classmethod
+    @FETCH_HELP_TIME.time()
     def help_command(cls, update: Update, _: CallbackContext) -> None:
         update.message.reply_text("Upload image as picture. Bot will blur all detected faces.")
 
+    @FETCH_FEEDBACK_TIME.time()
     def receive_callback(self, update: Update, _: CallbackContext) -> None:
         message_id = update.callback_query.message.reply_to_message.message_id
         action = update.callback_query.data
 
         self._feedback_storage.save(message_id, action)
 
+    @FETCH_IMAGE_TIME.time()
     def echo(self, update: Update, context: CallbackContext) -> None:
         if len(update.message.photo) > 0:
             self._task_creator.create(
