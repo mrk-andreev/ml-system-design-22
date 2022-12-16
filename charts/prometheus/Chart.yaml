@@ -1,0 +1,9 @@
+apiVersion: v2
+name: ml-system-design-22--prometheus
+version: 1.0.0
+
+
+dependencies:
+  - name: kube-prometheus-stack
+    version: "43.1.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
