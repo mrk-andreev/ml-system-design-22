@@ -9,6 +9,7 @@ RUN touch /opt/yolov5/__init__.py
 RUN pip install -r /opt/yolov5/requirements.txt
 COPY app_predictor.py app_predictor.py
 COPY predict.py predict.py
+COPY resnet.py resnet.py
 COPY model model
 ENV PYTHONPATH /opt/app:/opt/:/opt/yolov5
 ENTRYPOINT ["python"]

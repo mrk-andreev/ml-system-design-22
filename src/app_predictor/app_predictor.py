@@ -7,20 +7,21 @@ import tempfile
 import time
 import typing
 import uuid
-import warnings
 from json import JSONEncoder
 from typing import List
+from typing import Tuple
 
 import boto3
 import cv2
 import mlflow
 import redis
 import requests
+from prometheus_client import start_http_server, Summary
 from telegram import Bot
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
-from prometheus_client import start_http_server, Summary
 
+from predict import blur
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
@@ -108,7 +109,7 @@ class CustomEncoder(JSONEncoder):
 
 class BasePredictor(abc.ABC):
     @abc.abstractmethod
-    def predict(self, img: List[List[int]]) -> List[Rect]:
+    def predict(self, img: List[List[int]]) -> Tuple[List[List[int]], List[Rect]]:
         pass
 
 
@@ -116,8 +117,10 @@ class Cv2CascadeClassifierPredictor(BasePredictor):
     def __init__(self, path):
         self._m = cv2.CascadeClassifier(path)
 
-    def predict(self, img: List[List[int]]) -> List[Rect]:
-        return [Rect(*f) for f in self._m.detectMultiScale(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 1.1, 4)]
+    def predict(self, img: List[List[int]]) -> Tuple[List[List[int]], List[Rect]]:
+        rects = [Rect(*f) for f in self._m.detectMultiScale(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 1.1, 4)]
+        blured_img = blur(img, rects)
+        return blured_img, rects
 
 
 def init_predictor():
@@ -132,36 +135,15 @@ def init_predictor():
         )
 
 
-def blur(img, rects: typing.List[Rect]):
-    img = img.copy()
-    for rect in rects:
-        if (
-                rect.y < 0
-                or rect.y > img.shape[0]
-                or (rect.y + rect.h) > img.shape[0]
-                or rect.x < 0
-                or rect.x > img.shape[1]
-                or rect.x + rect.w > img.shape[1]
-        ):
-            warnings.warn("Rect out of image")
-            continue
-
-        img[rect.y: rect.y + rect.h, rect.x: rect.x + rect.w, :] = cv2.blur(
-            img[rect.y: rect.y + rect.h, rect.x: rect.x + rect.w, :], ksize=(rect.w // 2, rect.h // 2)
-        )
-
-    return img
-
-
 @TRANSFORM_IMAGE_TIME.time()
 def transform(predict_saver, predictor: BasePredictor, req, img):
-    faces = predictor.predict(img)
+    blured_img, faces = predictor.predict(img)
     predict_saver.save(req, faces)
 
     logger.info("Found '%s' faces", len(faces))
     if faces:
         logger.info("Rects: '%s'", faces)
-        return blur(img, faces)
+        return blured_img
 
     return img
 

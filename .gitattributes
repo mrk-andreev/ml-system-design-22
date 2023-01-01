@@ -4,6 +4,7 @@
 *.jpeg          binary
 *.png           binary
 *.so            binary
+*.pth           binary
 
 
 *.yaml          text
