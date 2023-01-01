@@ -21,7 +21,7 @@ from telegram import Bot
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 
-from predict import blur
+from predict import blur, BiSeNetPredictor, BaseMlFlowModel
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
@@ -123,16 +123,32 @@ class Cv2CascadeClassifierPredictor(BasePredictor):
         return blured_img, rects
 
 
+class MlFlowModelDirectImportWrapper:
+    def __init__(self, model: BaseMlFlowModel):
+        self._model = model
+        self._model.load_context(None)
+
+    def predict(self, img):
+        return self._model.predict(None, img)
+
+
 def init_predictor():
     try:
         mlflow.set_tracking_uri(TRACKING_URI)
         return mlflow.pyfunc.load_model(f'models:/{MODEL_NAME}/{MODEL_STAGE}')
     except Exception as e:
         logger.exception(e)
-        logger.warning("Use stub predictor")
-        return Cv2CascadeClassifierPredictor(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
-        )
+        logger.warning("Use stub predictor #1")
+
+        try:
+            return MlFlowModelDirectImportWrapper(BiSeNetPredictor())
+        except Exception as ee:
+            logger.exception(ee)
+            logger.warning("Use stub predictor #2")
+
+            return Cv2CascadeClassifierPredictor(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
+            )
 
 
 @TRANSFORM_IMAGE_TIME.time()
@@ -307,6 +323,7 @@ def main():
             img_after_transform = transform(predict_saver, predictor, req, img)
             data_uploader.upload(req, img_after_transform)
         except Exception as e:
+            logging.exception(e)
             logging.error(e)
 
 

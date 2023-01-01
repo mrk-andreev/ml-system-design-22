@@ -72,7 +72,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
 
         net = BiSeNet(n_classes=19)
         save_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/bisenet.pth")
-        net.load_state_dict(torch.load(save_pth))
+        net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
         net.eval()
 
         self._net = net
@@ -101,7 +101,6 @@ class BiSeNetPredictor(BaseMlFlowModel):
                 image = img.resize((512, 512), Image.BILINEAR)
                 img = self._to_tensor(image)
                 img = torch.unsqueeze(img, 0)
-                img = img.cuda()
                 out = self._net(img)[0]
                 parsing = out.squeeze(0).cpu().numpy().argmax(0)
 
@@ -126,7 +125,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
             final = np.array(final)
 
             img_copy[y:y + h, x:x + w, :] = final.copy()
-            return img_copy, faces
+            return img_copy, [Rect(*f) for f in faces]
 
 
 class YoloPredictor(BaseMlFlowModel):
@@ -199,6 +198,7 @@ class YoloPredictor(BaseMlFlowModel):
 
 
 def blur(img, rects: typing.List[Rect]):
+    import cv2
     img = img.copy()
     for rect in rects:
         if (

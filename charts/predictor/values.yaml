@@ -6,7 +6,7 @@ imagePullSecrets:
 image:
   registry: 'markandreev/'
   repository: 'predictor'
-  tag: '20221209-3'
+  tag: '20230101-10'
 imagePullPolicy: 'IfNotPresent'
 
 model:
