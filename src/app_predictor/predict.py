@@ -73,7 +73,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
         self._face_cascade = cv2.CascadeClassifier(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
         )
-
+        torch.jit.enable_onednn_fusion(True)
         net = BiSeNet(n_classes=19)
         save_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/bisenet.pth")
         net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
@@ -84,6 +84,14 @@ class BiSeNetPredictor(BaseMlFlowModel):
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ])
+
+        sample_input = torch.rand(1, 3, 512, 512)
+        traced_model = torch.jit.trace(net, sample_input)
+        self._net = torch.jit.freeze(traced_model)
+        # warmup
+        with torch.no_grad():
+            self._net(sample_input)
+            self._net(sample_input)
         logger.info("Complete loading BiSeNetPredictor")
 
     def predict(self, context, model_input):
