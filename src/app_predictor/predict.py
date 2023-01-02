@@ -72,6 +72,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/haarcascade_frontalface_default.xml")
         )
         torch.jit.enable_onednn_fusion(True)
+        torch.set_num_threads(1)
         net = BiSeNet(n_classes=19)
         save_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/bisenet.pth")
         net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
