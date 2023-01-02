@@ -32,11 +32,6 @@ UPLOAD_IMAGE_TIME = Summary('upload_image_request_processing_seconds', 'Time spe
 
 CACHE = {}
 
-MODEL_NAME = os.environ['MODEL_NAME']
-MODEL_STAGE = os.environ['MODEL_STAGE']
-TRACKING_URI = os.environ['MLFLOW_TRACKING_URL']
-
-
 class PredictWriter(abc.ABC):
     @abc.abstractmethod
     def save(self, req, predicts):
@@ -134,8 +129,12 @@ class MlFlowModelDirectImportWrapper:
 
 def init_predictor():
     try:
-        mlflow.set_tracking_uri(TRACKING_URI)
-        return mlflow.pyfunc.load_model(f'models:/{MODEL_NAME}/{MODEL_STAGE}')
+        model_name = os.environ['MODEL_NAME']
+        model_stage = os.environ['MODEL_STAGE']
+        tracking_uri = os.environ['MLFLOW_TRACKING_URL']
+
+        mlflow.set_tracking_uri(tracking_uri)
+        return mlflow.pyfunc.load_model(f'models:/{model_name}/{model_stage}')
     except Exception as e:
         logger.exception(e)
         logger.warning("Use stub predictor #1")

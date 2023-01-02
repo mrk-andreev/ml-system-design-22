@@ -1,4 +1,5 @@
 import abc
+import logging
 import os
 import tempfile
 import typing
@@ -9,6 +10,8 @@ from typing import Tuple
 
 import mlflow
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class Rect:
@@ -61,6 +64,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
         return "biSeNet"
 
     def load_context(self, context):
+        logger.info("Start loading BiSeNetPredictor")
         import cv2
         import torch
         import torchvision.transforms as transforms
@@ -80,6 +84,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ])
+        logger.info("Complete loading BiSeNetPredictor")
 
     def predict(self, context, model_input):
         return self.predict_from_picture(model_input)
@@ -90,8 +95,11 @@ class BiSeNetPredictor(BaseMlFlowModel):
         from PIL import Image
 
         img_copy = img_copy.copy()
-        gray = cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY)
-        faces = self._face_cascade.detectMultiScale(gray, 1.1, 4)
+        faces = self._face_cascade.detectMultiScale(
+            cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY),
+            scaleFactor=1.1,
+            minNeighbors=4
+        )
 
         for (x, y, w, h) in faces:
             img = img_copy[y:y + h, x:x + w, :]
@@ -113,7 +121,10 @@ class BiSeNetPredictor(BaseMlFlowModel):
 
             im = np.array(image)
             im_blur = im.copy()
-            im_blur[:, :] = cv2.blur(im[:, :], (100, 100))
+            im_blur[:, :] = cv2.blur(
+                im[:, :],
+                ksize=(len(im) // 2, len(im[0]) // 2)
+            )
 
             final = im.copy()
             for i in points:
@@ -123,9 +134,8 @@ class BiSeNetPredictor(BaseMlFlowModel):
             final = Image.fromarray(final)
             final = final.resize(img_size, Image.BILINEAR)
             final = np.array(final)
-
             img_copy[y:y + h, x:x + w, :] = final.copy()
-            return img_copy, [Rect(*f) for f in faces]
+        return img_copy, [Rect(*f) for f in faces]
 
 
 class YoloPredictor(BaseMlFlowModel):
