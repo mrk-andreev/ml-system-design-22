@@ -112,12 +112,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
                 out = self._net(img)[0]
                 parsing = out.squeeze(0).cpu().numpy().argmax(0)
 
-            points = []
-            for row in range(parsing.shape[0]):
-                for col in range(parsing.shape[1]):
-                    if parsing[row][col] != 0 and parsing[row][col] < 14:
-                        points += [[row, col]]
-            points = np.asarray(points)
+            points = np.asarray(np.where((parsing > 0) & (parsing < 14))).T
 
             im = np.array(image)
             im_blur = im.copy()
