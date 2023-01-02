@@ -122,9 +122,7 @@ class BiSeNetPredictor(BaseMlFlowModel):
             )
 
             final = im.copy()
-            for ii, jj in points:
-                final[ii, jj] = im_blur[ii, jj]
-
+            final[points[:, 0], points[:, 1]] = im_blur[points[:, 0], points[:, 1]]
             final = Image.fromarray(final)
             final = final.resize(img_size, Image.BILINEAR)
             final = np.array(final)
