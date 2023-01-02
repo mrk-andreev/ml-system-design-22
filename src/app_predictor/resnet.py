@@ -1,11 +1,10 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.model_zoo as modelzoo
 
-# from modules.bn import InPlaceABNSync as BatchNorm2d
-
-resnet18_url = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
+resnet18_url = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model/resnet18.pth")
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -47,7 +46,7 @@ class BasicBlock(nn.Module):
 
 def create_layer_basic(in_chan, out_chan, bnum, stride=1):
     layers = [BasicBlock(in_chan, out_chan, stride=stride)]
-    for i in range(bnum-1):
+    for i in range(bnum - 1):
         layers.append(BasicBlock(out_chan, out_chan, stride=1))
     return nn.Sequential(*layers)
 
@@ -71,13 +70,13 @@ class Resnet18(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-        feat8 = self.layer2(x) # 1/8
-        feat16 = self.layer3(feat8) # 1/16
-        feat32 = self.layer4(feat16) # 1/32
+        feat8 = self.layer2(x)  # 1/8
+        feat16 = self.layer3(feat8)  # 1/16
+        feat32 = self.layer4(feat16)  # 1/32
         return feat8, feat16, feat32
 
     def init_weight(self):
-        state_dict = modelzoo.load_url(resnet18_url)
+        state_dict = torch.load(resnet18_url, map_location=torch.device('cpu'))
         self_state_dict = self.state_dict()
         for k, v in state_dict.items():
             if 'fc' in k: continue
@@ -91,6 +90,6 @@ class Resnet18(nn.Module):
                 wd_params.append(module.weight)
                 if not module.bias is None:
                     nowd_params.append(module.bias)
-            elif isinstance(module,  nn.BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
