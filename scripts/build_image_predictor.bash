@@ -1,5 +1,5 @@
 #bin/bash
-# example: bash scripts/build_image_predictor.bash markandreev/predictor:20230102-4
+# example: bash scripts/build_image_predictor.bash markandreev/predictor:20230102-8
 
 set -e
 
